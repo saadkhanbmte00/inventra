@@ -5,20 +5,20 @@
 # ============================================================
 
 # ---- AUTHENTICATION ----
-# RECOMMENDED (turnkey): host the site on Netlify and enable
-# Identity + Git Gateway — then this works with zero extra setup.
+# Configured for your GitHub Pages repo. Login uses your GitHub account via a
+# small OAuth proxy — set base_url to your proxy URL (free Cloudflare Worker;
+# see README "Admin panel"). Until then the admin loads but can't sign in.
 backend:
-  name: git-gateway
+  name: github
+  repo: saadkhanbmte00/inventra
   branch: main
+  base_url: https://REPLACE-WITH-YOUR-OAUTH-PROXY
 
-# ---- ALTERNATIVE: GitHub Pages + GitHub login ----
-# If you keep the site on GitHub Pages, comment out the block above
-# and use this instead (needs a tiny free OAuth proxy — see README):
+# ---- ALTERNATIVE: host on Netlify (turnkey — NO proxy needed) ----
+# Connect this repo to Netlify, enable Identity + Git Gateway, then use:
 # backend:
-#   name: github
-#   repo: YOUR-USERNAME/inventra        # change to your repo
+#   name: git-gateway
 #   branch: main
-#   base_url: https://your-oauth-proxy  # e.g. a free Cloudflare Worker
 
 # Editorial workflow gives you draft → review → publish (optional).
 # publish_mode: editorial_workflow
