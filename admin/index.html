@@ -1,14 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex">
   <title>INVENTRA — Content Admin</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    body{overflow-y:auto}
+    .login{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1.5rem;background:#05080f;overflow:hidden}
+    .login::before{content:"";position:absolute;inset:-25%;background:radial-gradient(circle at 30% 30%,rgba(34,211,238,.25),transparent 45%),radial-gradient(circle at 70% 60%,rgba(139,92,246,.25),transparent 45%);filter:blur(50px)}
+    .login-box{position:relative;z-index:1;width:440px;max-width:100%;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-lg);padding:clamp(1.8rem,4vw,2.6rem);text-align:center;box-shadow:var(--shadow-2)}
+    .login-box .mark{width:54px;height:54px;margin:0 auto 1.1rem}
+    .login-box h1{font-size:1.5rem;margin-bottom:.4rem}
+    .login-box .sub{color:var(--text-muted);font-size:.92rem;margin-bottom:1.6rem}
+    .login-box input{margin-bottom:.9rem;font-family:var(--font-mono);font-size:.85rem}
+    .login-help{margin-top:1.3rem;font-size:.78rem;color:var(--text-muted);line-height:1.7}
+    .login-help a{color:var(--cyan)}
+    .app{display:none;min-height:100vh}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem clamp(1rem,3vw,2rem);background:rgba(7,11,22,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    .topbar .brand{font-size:1.05rem}
+    .topbar .mark{width:30px;height:30px}
+    .topbar .right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+    .repo-chip{font-family:var(--font-mono);font-size:.74rem;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--line);padding:.4rem .7rem;border-radius:8px}
+    .wrap{max-width:980px;margin:0 auto;padding:clamp(1.2rem,3vw,2.2rem)}
+    .tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.6rem;border-bottom:1px solid var(--line);padding-bottom:0}
+    .tab{padding:.7rem 1.1rem;border:0;background:none;color:var(--text-muted);font-family:var(--font-display);font-weight:600;font-size:.95rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s}
+    .tab:hover{color:#fff}
+    .tab.active{color:#fff;border-bottom-color:var(--cyan)}
+    .panel{display:none}.panel.active{display:block}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.3rem}
+    .panel-head h2{font-size:1.4rem}
+    .panel-head p{font-size:.88rem;margin-top:.2rem}
+    .editor-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem;margin-bottom:1.1rem;position:relative}
+    .editor-card .row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem}
+    .editor-card .row-head .idx{font-family:var(--font-mono);font-size:.78rem;color:var(--cyan)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+    @media(max-width:620px){.grid2{grid-template-columns:1fr}}
+    .field label{font-size:.78rem}
+    .btn-danger{background:rgba(245,80,80,.12);border:1px solid rgba(245,80,80,.3);color:#ff9b9b;padding:.45rem .8rem;border-radius:9px;font-size:.82rem;cursor:pointer;font-weight:600}
+    .btn-danger:hover{background:rgba(245,80,80,.2)}
+    .toasts{position:fixed;bottom:1.2rem;right:1.2rem;z-index:200;display:flex;flex-direction:column;gap:.6rem}
+    .toast{padding:.8rem 1.1rem;border-radius:11px;font-size:.88rem;font-weight:500;box-shadow:var(--shadow-2);animation:fadeIn .3s ease}
+    .toast.ok{background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);color:var(--cyan-bright)}
+    .toast.err{background:rgba(245,80,80,.12);border:1px solid rgba(245,80,80,.35);color:#ff9b9b}
+    .toast.info{background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text)}
+    .savebar{position:sticky;bottom:0;background:linear-gradient(transparent,rgba(7,11,22,.95) 30%);padding:1.2rem 0 .4rem;display:flex;gap:.7rem;justify-content:flex-end;flex-wrap:wrap}
+    .muted-help{font-size:.78rem;color:var(--text-muted)}
+    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#04121b;border-radius:50%;display:inline-block;animation:spin-slow .7s linear infinite;vertical-align:-3px}
+    @media(prefers-reduced-motion:no-preference){@keyframes spin-slow{to{transform:rotate(360deg)}}}
+  </style>
 </head>
-<body>
-  <!-- Decap CMS (formerly Netlify CMS). Loads the admin UI from CDN. -->
-  <script src="https://unpkg.com/decap-cms@^3.6.0/dist/decap-cms.js"></script>
+<body class="noise">
+
+<!-- ===== LOGIN ===== -->
+<div class="login" id="login">
+  <div class="login-box">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="15" fill="#0e1525" stroke="rgba(148,173,210,.22)" stroke-width="2"/><path d="M22 18l12 14-12 14" fill="none" stroke="#22d3ee" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 32h6" stroke="#5eeaff" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="18" r="3.4" fill="#0e1525" stroke="#22d3ee" stroke-width="2"/><circle cx="34" cy="32" r="3.4" fill="#0e1525" stroke="#3b82f6" stroke-width="2"/><circle cx="22" cy="46" r="3.4" fill="#0e1525" stroke="#8b5cf6" stroke-width="2"/><circle cx="48" cy="32" r="3.6" fill="#8b5cf6"/></svg>
+    <h1>INVENTRA Admin</h1>
+    <p class="sub">Connect with a GitHub token to manage your site content.</p>
+    <input class="input" type="password" id="tokenInput" placeholder="github_pat_… or ghp_…" autocomplete="off">
+    <input class="input" type="text" id="repoInput" placeholder="owner/repo" value="saadkhanbmte00/inventra">
+    <button class="btn btn-primary btn-block" id="loginBtn" onclick="handleLogin()">Connect to GitHub</button>
+    <div class="login-help">
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a fine-grained token →</a><br>
+      Give it <strong>Contents: Read &amp; write</strong> on this repo only.<br>
+      Your token is stored only in this browser and used solely with GitHub's API.
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="app" id="app">
+  <div class="topbar">
+    <a class="brand" href="../index.html"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="15" fill="#0e1525" stroke="rgba(148,173,210,.22)" stroke-width="2"/><path d="M22 18l12 14-12 14" fill="none" stroke="#22d3ee" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 32h6" stroke="#5eeaff" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="18" r="3.4" fill="#0e1525" stroke="#22d3ee" stroke-width="2"/><circle cx="34" cy="32" r="3.4" fill="#0e1525" stroke="#3b82f6" stroke-width="2"/><circle cx="22" cy="46" r="3.4" fill="#0e1525" stroke="#8b5cf6" stroke-width="2"/><circle cx="48" cy="32" r="3.6" fill="#8b5cf6"/></svg><span class="name"><span class="row"><b>INVEN</b><i>TRA</i></span><span class="tag">Admin</span></span></a>
+    <div class="right">
+      <span class="repo-chip" id="repoChip"></span>
+      <a class="btn btn-ghost btn-sm" href="../index.html" target="_blank">View site ↗</a>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="settings" onclick="switchTab('settings')">Business details</button>
+      <button class="tab" data-tab="projects" onclick="switchTab('projects')">Projects</button>
+      <button class="tab" data-tab="blog" onclick="switchTab('blog')">Blog</button>
+    </div>
+
+    <!-- SETTINGS -->
+    <section class="panel active" id="panel-settings">
+      <div class="panel-head"><div><h2>Business details</h2><p class="muted">Contact info &amp; social links shown across the site.</p></div></div>
+      <div class="editor-card" id="settingsForm"><p class="muted">Loading…</p></div>
+      <div class="savebar"><button class="btn btn-primary" id="saveSettings" onclick="saveSettings()">Save changes</button></div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="panel" id="panel-projects">
+      <div class="panel-head"><div><h2>Projects</h2><p class="muted">Your portfolio cards (projects page + home).</p></div><button class="btn btn-ghost btn-sm" onclick="addProject()">+ Add project</button></div>
+      <div id="projectsList"><p class="muted">Loading…</p></div>
+      <div class="savebar"><button class="btn btn-primary" id="saveProjects" onclick="saveProjects()">Save changes</button></div>
+    </section>
+
+    <!-- BLOG -->
+    <section class="panel" id="panel-blog">
+      <div class="panel-head"><div><h2>Blog posts</h2><p class="muted">Insights articles (list + individual posts).</p></div><button class="btn btn-ghost btn-sm" onclick="addPost()">+ Add post</button></div>
+      <div id="blogList"><p class="muted">Loading…</p></div>
+      <div class="savebar"><button class="btn btn-primary" id="saveBlog" onclick="saveBlog()">Save changes</button></div>
+    </section>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+const API = 'https://api.github.com';
+const CONFIG = { token: null, repo: null, branch: 'main' };
+const FILES = { settings: 'content/settings.json', projects: 'content/projects.json', blog: 'content/blog.json' };
+const SHA = {};      // current sha per file
+const DATA = {};     // loaded json per key
+
+const $ = (s, c=document) => c.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const b64encode = str => btoa(unescape(encodeURIComponent(str)));
+const b64decode = b64 => decodeURIComponent(escape(atob(b64.replace(/\n/g,''))));
+
+function toast(msg, type='info'){
+  const t = document.createElement('div');
+  t.className = 'toast ' + type; t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400); }, 3500);
+}
+
+/* ---------- AUTH ---------- */
+function handleLogin(){
+  const token = $('#tokenInput').value.trim();
+  const repo = $('#repoInput').value.trim();
+  if(!token || !repo){ toast('Enter a token and repo.', 'err'); return; }
+  const btn = $('#loginBtn'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Connecting…';
+  CONFIG.token = token; CONFIG.repo = repo;
+  ghFetch(`/repos/${repo}`).then(async r => {
+    if(r.ok){
+      const info = await r.json(); CONFIG.branch = info.default_branch || 'main';
+      localStorage.setItem('inv_token', token); localStorage.setItem('inv_repo', repo);
+      $('#login').style.display='none'; $('#app').style.display='block';
+      $('#repoChip').textContent = repo;
+      loadAll();
+    } else {
+      toast(r.status===401?'Invalid token.':'Repo not found or no access.', 'err');
+      btn.disabled=false; btn.textContent='Connect to GitHub';
+    }
+  }).catch(()=>{ toast('Network error.', 'err'); btn.disabled=false; btn.textContent='Connect to GitHub'; });
+}
+function logout(){ localStorage.removeItem('inv_token'); localStorage.removeItem('inv_repo'); location.reload(); }
+
+function ghFetch(path, opts={}){
+  return fetch(API+path, { ...opts, headers: { 'Authorization':`Bearer ${CONFIG.token}`, 'Accept':'application/vnd.github+json', ...(opts.headers||{}) } });
+}
+
+/* ---------- LOAD / SAVE FILES ---------- */
+async function loadFile(key){
+  const res = await ghFetch(`/repos/${CONFIG.repo}/contents/${FILES[key]}?ref=${CONFIG.branch}`);
+  if(!res.ok) throw new Error('load '+key);
+  const j = await res.json();
+  SHA[key] = j.sha;
+  return JSON.parse(b64decode(j.content));
+}
+async function saveFile(key, obj, msg){
+  const body = { message: msg, content: b64encode(JSON.stringify(obj, null, 2) + '\n'), branch: CONFIG.branch };
+  if(SHA[key]) body.sha = SHA[key];
+  const res = await ghFetch(`/repos/${CONFIG.repo}/contents/${FILES[key]}`, { method:'PUT', body: JSON.stringify(body) });
+  if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(e.message || ('save '+key)); }
+  const j = await res.json(); SHA[key] = j.content.sha;
+}
+
+async function loadAll(){
+  try{
+    DATA.settings = await loadFile('settings'); renderSettings();
+    DATA.projects = (await loadFile('projects')).items || []; renderProjects();
+    DATA.blog = (await loadFile('blog')).posts || []; renderBlog();
+    toast('Loaded. Edit and Save — changes go live in ~1 min.', 'ok');
+  }catch(e){ toast('Could not load content: '+e.message, 'err'); }
+}
+
+/* ---------- SETTINGS ---------- */
+function field(label, id, val, ph=''){ return `<div class="field"><label>${label}</label><input class="input" id="${id}" value="${esc(val)}" placeholder="${ph}"></div>`; }
+function renderSettings(){
+  const s = DATA.settings || {};
+  $('#settingsForm').innerHTML = `
+    <div class="grid2">
+      ${field('Company name','s_company',s.company)}
+      ${field('Email','s_email',s.email)}
+      ${field('Phone (display)','s_phone',s.phone)}
+      ${field('Phone (dial, e.g. +15551234567)','s_phone_href',s.phone_href)}
+      ${field('Location','s_location',s.location)}
+      ${field('Response time','s_response_time',s.response_time)}
+      ${field('LinkedIn URL','s_linkedin',s.linkedin)}
+      ${field('GitHub URL','s_github',s.github)}
+      ${field('X / Twitter URL','s_x',s.x)}
+    </div>`;
+}
+async function saveSettings(){
+  const g = id => $('#'+id).value.trim();
+  const obj = { company:g('s_company'), email:g('s_email'), phone:g('s_phone'), phone_href:g('s_phone_href'),
+    location:g('s_location'), response_time:g('s_response_time'), linkedin:g('s_linkedin'), github:g('s_github'), x:g('s_x') };
+  await withSave('#saveSettings', ()=>saveFile('settings', obj, 'Update business details (admin)'), 'Business details saved ✓');
+  DATA.settings = obj;
+}
+
+/* ---------- PROJECTS ---------- */
+const SHAPES = ['robot','building','chip','eye','energy','ml','cube'];
+const CATS = ['robotics','automation','embedded','iot','control','design'];
+function sel(id,val,opts){ return `<select class="input" id="${id}">${opts.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select>`; }
+function projectCardForm(p, i){
+  return `<div class="editor-card" data-proj>
+    <div class="row-head"><span class="idx">PROJECT ${i+1}</span><button class="btn-danger" onclick="this.closest('[data-proj]').remove()">Remove</button></div>
+    <div class="grid2">
+      <div class="field"><label>Title</label><input class="input" data-f="title" value="${esc(p.title)}"></div>
+      <div class="field"><label>Badge text</label><input class="input" data-f="badge" value="${esc(p.badge)}"></div>
+      <div class="field"><label>Filter category</label><select class="input" data-f="category">${CATS.map(o=>`<option ${o===p.category?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div class="field"><label>Icon shape</label><select class="input" data-f="shape">${SHAPES.map(o=>`<option ${o===p.shape?'selected':''}>${o}</option>`).join('')}</select></div>
+    </div>
+    <div class="field" style="margin-top:.9rem"><label>Description</label><textarea class="textarea" data-f="description" style="min-height:70px">${esc(p.description)}</textarea></div>
+    <div class="grid2" style="margin-top:.4rem">
+      <div class="field"><label>Tags (comma-separated)</label><input class="input" data-f="tags" value="${esc((p.tags||[]).join(', '))}"></div>
+      <div class="field"><label>Result line</label><input class="input" data-f="result" value="${esc(p.result)}"></div>
+    </div>
+  </div>`;
+}
+function renderProjects(){ $('#projectsList').innerHTML = (DATA.projects||[]).map(projectCardForm).join('') || '<p class="muted">No projects yet — click “Add project”.</p>'; }
+function addProject(){ DATA.projects = collectProjects(); DATA.projects.push({title:'New project',badge:'Category',category:'automation',shape:'cube',description:'',tags:[],result:''}); renderProjects(); }
+function collectProjects(){
+  return Array.from(document.querySelectorAll('#projectsList [data-proj]')).map(card=>{
+    const g = f => { const el = card.querySelector(`[data-f="${f}"]`); return el ? el.value.trim() : ''; };
+    return { title:g('title'), category:g('category'), badge:g('badge'), shape:g('shape'),
+      description:g('description'), tags:g('tags').split(',').map(t=>t.trim()).filter(Boolean), result:g('result') };
+  });
+}
+async function saveProjects(){
+  const items = collectProjects();
+  await withSave('#saveProjects', ()=>saveFile('projects', { items }, 'Update projects (admin)'), 'Projects saved ✓');
+  DATA.projects = items;
+}
+
+/* ---------- BLOG ---------- */
+const BCATS = ['Automation','Embedded','IoT','Control','Robotics'];
+function postCardForm(p, i){
+  const body = Array.isArray(p.body) ? p.body.join('\n') : (p.body||'');
+  return `<div class="editor-card" data-post>
+    <div class="row-head"><span class="idx">POST ${i+1}</span><button class="btn-danger" onclick="this.closest('[data-post]').remove()">Remove</button></div>
+    <div class="grid2">
+      <div class="field"><label>Title</label><input class="input" data-f="title" value="${esc(p.title)}"></div>
+      <div class="field"><label>URL slug</label><input class="input" data-f="slug" value="${esc(p.slug)}"></div>
+      <div class="field"><label>Date (YYYY-MM-DD)</label><input class="input" data-f="date" value="${esc(p.date)}"></div>
+      <div class="field"><label>Category</label><select class="input" data-f="category">${BCATS.map(o=>`<option ${o===p.category?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div class="field"><label>Reading time</label><input class="input" data-f="reading_time" value="${esc(p.reading_time)}"></div>
+      <div class="field"><label>Featured?</label><select class="input" data-f="featured"><option value="false" ${!p.featured?'selected':''}>No</option><option value="true" ${p.featured?'selected':''}>Yes</option></select></div>
+    </div>
+    <div class="field" style="margin-top:.9rem"><label>Excerpt</label><textarea class="textarea" data-f="excerpt" style="min-height:60px">${esc(p.excerpt)}</textarea></div>
+    <div class="field"><label>Body (Markdown — supports #, lists, **bold**, code)</label><textarea class="textarea" data-f="body" style="min-height:220px;font-family:var(--font-mono);font-size:.85rem">${esc(body)}</textarea></div>
+  </div>`;
+}
+function renderBlog(){ $('#blogList').innerHTML = (DATA.blog||[]).map(postCardForm).join('') || '<p class="muted">No posts yet — click “Add post”.</p>'; }
+function addPost(){ DATA.blog = collectBlog(); DATA.blog.unshift({title:'New post',slug:'new-post',date:new Date().toISOString().slice(0,10),category:'Automation',reading_time:'5 min read',excerpt:'',featured:false,body:['Write your article here.']}); renderBlog(); }
+function collectBlog(){
+  return Array.from(document.querySelectorAll('#blogList [data-post]')).map(card=>{
+    const g = f => { const el = card.querySelector(`[data-f="${f}"]`); return el ? el.value : ''; };
+    return { title:g('title').trim(), slug:g('slug').trim(), date:g('date').trim(), category:g('category'),
+      reading_time:g('reading_time').trim(), excerpt:g('excerpt').trim(), featured:g('featured')==='true',
+      body:g('body').replace(/\r/g,'').split('\n') };
+  });
+}
+async function saveBlog(){
+  const posts = collectBlog();
+  await withSave('#saveBlog', ()=>saveFile('blog', { posts }, 'Update blog (admin)'), 'Blog saved ✓');
+  DATA.blog = posts;
+}
+
+/* ---------- helpers ---------- */
+async function withSave(btnSel, fn, okMsg){
+  const btn = $(btnSel); const label = btn.textContent; btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Saving…';
+  try{ await fn(); toast(okMsg, 'ok'); }
+  catch(e){ toast('Save failed: '+e.message, 'err'); }
+  finally{ btn.disabled=false; btn.textContent=label; }
+}
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+}
+
+/* ---------- auto-login ---------- */
+(function(){
+  const t = localStorage.getItem('inv_token'), r = localStorage.getItem('inv_repo');
+  if(t && r){ $('#tokenInput').value=t; $('#repoInput').value=r; handleLogin(); }
+})();
+</script>
 </body>
 </html>

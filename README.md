@@ -39,10 +39,9 @@ Deploys to any free static host — GitHub Pages, Netlify, Vercel, Cloudflare Pa
 ├── blog-*.html                        # redirects from old article URLs → post.html
 ├── 404.html
 ├── favicon.svg  site.webmanifest  robots.txt  sitemap.xml  .nojekyll
-├── admin/                             # Decap CMS — the editable admin panel
-│   ├── index.html
-│   └── config.yml                     # what the CMS lets you edit
-├── content/                           # editable data the CMS writes to
+├── admin/                             # Token-login admin panel (GitHub API)
+│   └── index.html
+├── content/                           # editable data the admin writes to
 │   ├── settings.json                  # contact + social details
 │   ├── projects.json                  # portfolio items
 │   └── blog.json                      # blog posts
@@ -117,28 +116,25 @@ JSON-LD block in `index.html` to your real URL.
 
 ---
 
-## 🔐 Admin panel (Decap CMS)
+## 🔐 Admin panel (token login — works on GitHub Pages, no extra services)
 
-A real, login-protected admin lives at **`/admin/`**. You sign in with your **GitHub account**
-(no password is stored anywhere), edit business details / projects / blog posts in a friendly UI,
-hit **Publish**, and the change commits to the repo and **auto-redeploys** the live site.
-The pages read those edits from `content/*.json` via `assets/js/cms.js`.
+A self-contained admin lives at **`/admin/`**. It needs **no Decap, no OAuth app, no Worker**:
 
-**To switch the login on, pick one:**
+1. Go to **GitHub → Settings → Developer settings → Personal access tokens →
+   Fine-grained tokens → Generate new token**.
+   - **Repository access:** Only select repositories → this repo.
+   - **Permissions → Repository → Contents: Read and write.**
+   - Generate and copy the token.
+2. Open **`/admin/`** on your live site, paste the token, confirm the repo, **Connect to GitHub**.
+3. Edit **Business details**, **Projects** and **Blog**, hit **Save**. Each save commits to the
+   repo via the GitHub API, and GitHub Pages redeploys the site in ~1 minute.
 
-- **Easiest — host on Netlify (recommended for the admin):**
-  1. Deploy the repo to Netlify (free).
-  2. Netlify dashboard → **Identity → Enable**, then **Identity → Services → Git Gateway → Enable**.
-  3. Invite yourself (Identity → Invite users).
-  4. Visit `https://your-site.netlify.app/admin/` and log in. Done — `config.yml` is already set for this.
-  *(Bonus: Netlify also handles your contact form natively.)*
+The pages render `content/*.json` (settings, projects, blog) via `assets/js/cms.js`, so your
+edits appear live; the static HTML stays as a no-JS fallback. Your token is stored **only in your
+browser** (localStorage) and used solely with GitHub's API — nothing is sent anywhere else.
 
-- **Staying on GitHub Pages:** edit `admin/config.yml` to use the commented-out `github` backend,
-  create a GitHub OAuth App, and deploy a tiny free OAuth proxy (e.g. a Cloudflare Worker —
-  `decap-proxy`). Then `/admin/` logs in with GitHub. A bit more setup than Netlify.
-
-Edited content shows on the live site because the pages render `content/*.json` at load
-(the static HTML is the no-JS fallback). To add Services / Testimonials to the CMS too, say the word.
+> Tip: a **fine-grained** token scoped to this one repo with only *Contents* access is safest.
+> You can revoke/rotate it anytime from the same GitHub settings page.
 
 ---
 
