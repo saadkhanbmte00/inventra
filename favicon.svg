@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="#070b16"/>
-  <polygon points="32,9 53,21 32,33 11,21" fill="#5eeaff"/>
-  <polygon points="11,21 32,33 32,55 11,43" fill="#3b82f6"/>
-  <polygon points="53,21 32,33 32,55 53,43" fill="#8b5cf6"/>
-  <polyline points="11,21 32,33 53,21" fill="none" stroke="#070b16" stroke-width="1.1" opacity=".25"/>
-  <polyline points="32,33 32,55" fill="none" stroke="#070b16" stroke-width="1.1" opacity=".25"/>
+  <defs><linearGradient id="g" x1="18" y1="14" x2="50" y2="50" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#22d3ee"/><stop offset=".55" stop-color="#3b82f6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#070b16" stroke="rgba(148,173,210,.18)" stroke-width="1.5"/>
+  <path d="M22 18l12 14-12 14" fill="none" stroke="url(#g)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M40 32h6" stroke="url(#g)" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="22" cy="18" r="3.7" fill="#070b16" stroke="#22d3ee" stroke-width="2.2"/>
+  <circle cx="34" cy="32" r="3.7" fill="#070b16" stroke="#3b82f6" stroke-width="2.2"/>
+  <circle cx="22" cy="46" r="3.7" fill="#070b16" stroke="#8b5cf6" stroke-width="2.2"/>
+  <circle cx="48" cy="32" r="4" fill="url(#g)"/>
 </svg>
